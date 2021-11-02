@@ -77,7 +77,9 @@ namespace Benchmarks
 		[Benchmark]
 		public async Task RecordParserAsync()
 		{
-			var parser = new VariableLengthReaderBuilder<SalesRecord>()
+			var reusableInstance = new SalesRecord();
+
+			var parser = new VariableLengthReaderSequentialBuilder<SalesRecord>()
 				.Map(x => x.Region, 0)
 				.Map(x => x.Country, 1)
 				.Map(x => x.ItemType, 2)
@@ -92,7 +94,7 @@ namespace Benchmarks
 				.Map(x => x.TotalRevenue, 11)
 				.Map(x => x.TotalCost, 12)
 				.Map(x => x.TotalProfit, 13)
-				.Build(",", CultureInfo.InvariantCulture);
+				.Build(",", CultureInfo.InvariantCulture, factory: () => reusableInstance);
 
 			using var stream = TestData.GetUtf8Stream();
 			var records = RecordParserSupport.ProcessFile(stream, parser.Parse);
